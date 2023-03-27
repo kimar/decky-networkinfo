@@ -1,105 +1,116 @@
 import {
   ButtonItem,
   definePlugin,
-  DialogButton,
-  Menu,
-  MenuItem,
+  Field,
+  Focusable,
+  Marquee,
   PanelSection,
   PanelSectionRow,
-  Router,
   ServerAPI,
-  showContextMenu,
+  Spinner,
   staticClasses,
 } from "decky-frontend-lib";
-import { VFC } from "react";
-import { FaShip } from "react-icons/fa";
+import { useEffect, useState, VFC } from "react";
+import { FaWifi } from "react-icons/fa";
 
-import logo from "../assets/logo.png";
+import { Backend, INetworkInfo } from "./backend";
 
-// interface AddMethodArgs {
-//   left: number;
-//   right: number;
-// }
+let pollTimerRef: NodeJS.Timeout | undefined; // reference for time for cleanup purposes
 
-const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
-  // const [result, setResult] = useState<number | undefined>();
+const Content: VFC<{ backend: Backend }> = ({ backend }) => {
+  const [networkInfo, setNetworkInfo] = useState<INetworkInfo[] | null>(null);
+  const [detailsShown, setDetailsShown] = useState<boolean>(false);
 
-  // const onClick = async () => {
-  //   const result = await serverAPI.callPluginMethod<AddMethodArgs, number>(
-  //     "add",
-  //     {
-  //       left: 2,
-  //       right: 2,
-  //     }
-  //   );
-  //   if (result.success) {
-  //     setResult(result.result);
-  //   }
-  // };
+  const refreshNetworkInfo = async () => {
+    const info = await backend.getNetworkInfo();
+    setNetworkInfo(info.filter((item) => item.ifname !== "lo")); // filter loopback device
+  };
+
+  const pollNetworkDevices = (delay: number | undefined) => {
+    pollTimerRef = setTimeout(async () => {
+      await refreshNetworkInfo();
+      pollNetworkDevices(delay);
+    }, delay);
+  };
+
+  useEffect(() => {
+    pollNetworkDevices(500);
+  }, []);
 
   return (
-    <PanelSection title="Panel Section">
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={(e) =>
-            showContextMenu(
-              <Menu label="Menu" cancelText="CAAAANCEL" onCancel={() => {}}>
-                <MenuItem onSelected={() => {}}>Item #1</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #2</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #3</MenuItem>
-              </Menu>,
-              e.currentTarget ?? window
-            )
-          }
-        >
-          Server says yolo
-        </ButtonItem>
-      </PanelSectionRow>
-
-      <PanelSectionRow>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <img src={logo} />
-        </div>
-      </PanelSectionRow>
-
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={() => {
-            Router.CloseSideMenus();
-            Router.Navigate("/decky-plugin-test");
-          }}
-        >
-          Router
-        </ButtonItem>
-      </PanelSectionRow>
-    </PanelSection>
-  );
-};
-
-const DeckyPluginRouterTest: VFC = () => {
-  return (
-    <div style={{ marginTop: "50px", color: "white" }}>
-      Hello World!
-      <DialogButton onClick={() => Router.NavigateToLibraryTab()}>
-        Go to Library
-      </DialogButton>
-    </div>
+    <Focusable style={{ minWidth: "100%", minHeight: "100%" }}>
+      <PanelSection title="Devices">
+        {networkInfo == null && (
+          <PanelSectionRow>
+            <Field label="Loading…">
+              <Spinner />
+            </Field>
+          </PanelSectionRow>
+        )}
+        {networkInfo && networkInfo.length === 0 && (
+          <PanelSectionRow>No Network Devices found.</PanelSectionRow>
+        )}
+        {networkInfo &&
+          networkInfo.map((info) => {
+            return (
+              <div>
+                <h4>{info.ifname}</h4>
+                {info.addr_info.length === 0 && (
+                  <PanelSectionRow>Device not connected.</PanelSectionRow>
+                )}
+                {info.addr_info.map((addr_info) => {
+                  return (
+                    <PanelSectionRow>
+                      <Field
+                        label={`Address (${addr_info.family})`}
+                        bottomSeparator="none"
+                      >
+                        <Marquee>{addr_info.local}</Marquee>
+                      </Field>
+                    </PanelSectionRow>
+                  );
+                })}
+                {detailsShown && (
+                  <div>
+                    <PanelSectionRow>
+                      <Field label="Broadcast">{info.broadcast}</Field>
+                    </PanelSectionRow>
+                    <PanelSectionRow>
+                      <Field label="Link type">{info.link_type}</Field>
+                    </PanelSectionRow>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        {networkInfo && networkInfo.length > 0 && (
+          <PanelSectionRow>
+            <ButtonItem
+              layout="below"
+              onClick={() => {
+                setDetailsShown(!detailsShown);
+              }}
+            >
+              {detailsShown ? "Hide" : "Show"} Details
+            </ButtonItem>
+          </PanelSectionRow>
+        )}
+      </PanelSection>
+    </Focusable>
   );
 };
 
 export default definePlugin((serverApi: ServerAPI) => {
-  serverApi.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
-    exact: true,
-  });
+  const backend = new Backend(serverApi);
 
   return {
-    title: <div className={staticClasses.Title}>Example Plugin</div>,
-    content: <Content serverAPI={serverApi} />,
-    icon: <FaShip />,
+    title: <div className={staticClasses.Title}>Network Info</div>,
+    content: <Content backend={backend} />,
+    icon: <FaWifi />,
     onDismount() {
-      serverApi.routerHook.removeRoute("/decky-plugin-test");
+      if (pollTimerRef) {
+        clearTimeout(pollTimerRef);
+      }
     },
   };
 });
