@@ -2,7 +2,7 @@
 
 A Decky Loader Plugin to show detailed information about all Network Interfaces.
 
-![Screenshot](/assets/screenshot.jpg)
+![Screenshot](/.meta/screenshot.jpg)
 
 ## Features
 
