@@ -9,7 +9,7 @@ import {
 import { useEffect, useState, VFC } from "react";
 import { FaNetworkWired } from "react-icons/fa";
 
-import { Backend } from "./Backend";
+import { Backend } from "./backend";
 import { DevicesList } from "./components/DevicesList";
 import { INetworkInfo } from "./models/INetworkInfo";
 
