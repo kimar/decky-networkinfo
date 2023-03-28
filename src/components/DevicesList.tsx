@@ -1,7 +1,8 @@
 import {
-  ButtonItem, Focusable,
+  ButtonItem,
+  Focusable,
   PanelSection,
-  PanelSectionRow
+  PanelSectionRow,
 } from "decky-frontend-lib";
 import { useState } from "react";
 import { INetworkInfo } from "../models/INetworkInfo";
