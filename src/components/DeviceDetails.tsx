@@ -23,8 +23,10 @@ export function DeviceDetails({
             >
               {addr_info.local}
             </Field>
-            <Field label="Scope">{addr_info.scope}</Field>
-            <Field label="Prefix Length">{addr_info.prefixlen}</Field>
+            {detailsShown && <Field label="Scope">{addr_info.scope}</Field>}
+            {detailsShown && (
+              <Field label="Prefix Length">{addr_info.prefixlen}</Field>
+            )}
             {detailsShown && addr_info.broadcast && (
               <Field label="Broadcast">{addr_info.broadcast}</Field>
             )}
