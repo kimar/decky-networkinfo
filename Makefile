@@ -36,12 +36,8 @@ build-front: ## Build frontend
 	@echo "+ $@"
 	@pnpm run build
 
-build-back: ## Build backend
-	@echo "+ $@"
-	@make -C ./backend
-
 build: ## Build everything
-	@$(MAKE) build-front build-back
+	@$(MAKE) build-front
 
 copy-ssh-key: ## Copy public ssh key to steamdeck
 	@echo "+ $@"
@@ -88,7 +84,6 @@ cleanup: ## Delete all generated files and folders
 	@rm -rf ./tmp
 	@rm -rf ./node_modules
 	@rm -rf ./.pnpm-store
-	@rm -rf ./backend/out
 
 uninstall-plugin: ## Uninstall plugin from steamdeck, restart Decky
 	@echo "+ $@"
@@ -101,6 +96,5 @@ docker-rebuild-image: ## Rebuild docker image
 	@docker compose build --pull
 
 docker-build: ## Build project inside docker container
-	@$(MAKE) build-back
 	@echo "+ $@"
 	@docker run --rm -i -v $(PWD):/plugin -v $(PWD)/tmp/out:/out ghcr.io/steamdeckhomebrew/builder:latest
