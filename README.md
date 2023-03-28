@@ -13,8 +13,6 @@ A Decky Loader Plugin to show detailed information about all Network Interfaces.
 
 ## Installation
 
-**Not yet published**
-
 1. Install [Decky Loader](https://deckbrew.xyz/en/user-guide/install)
 2. Open the Quick Access menu
 3. Open the Plugins Browser
