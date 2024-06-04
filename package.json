@@ -1,6 +1,6 @@
 {
   "name": "decky-networkinfo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Decky Loader Plugin to show detailed information about all Network Interfaces",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
@@ -39,7 +39,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "decky-frontend-lib": "^3.19.2",
+    "decky-frontend-lib": "^3.24.5",
     "react-icons": "^4.4.0"
   },
   "pnpm": {
